@@ -34,54 +34,53 @@ DESIRED_COMPONENTS = ['Build system',
 
 pr_comments = {}
 
-def print_comment_stats():
-    with open("comments_stats.csv", "w") as stats_file:
-        fieldnames = ['number', 'author', 'date']
-        writer = csv.DictWriter(stats_file, fieldnames=fieldnames)
-        writer.writeheader()
+def get_stats():
+    comments_file = open("comments_stats.csv", "w")
+    pr_file = open("pr_stats.csv", "w")
 
-        for number in range(MAX_PR):
+    comments_fieldnames = ['number', 'author', 'date']
+    comments_writer = csv.DictWriter(comments_file, fieldnames=comments_fieldnames)
+    comments_writer.writeheader()
 
-            path = "{}/issues/{}xx/{}-comments.json".format(GH_META_DIR, number // 100, number)
-            if not os.path.exists(path):
-                continue
-            with open(path, "r") as f:
-                j = json.load(f)
+    pr_fieldnames = ['number', 'author', 'opened', 'commits', 'comments', 'labels', 'state', 'closed']
+    pr_writer = csv.DictWriter(pr_file, fieldnames=pr_fieldnames)
+    pr_writer.writeheader()
 
-            pr_comments[number] = len(j)
+    for number in range(MAX_PR):
 
-            for comment in j:
-                if comment['user'] is not None:
-                    writer.writerow({'number': str(number),
-                                     'author': comment['user']['login'],
-                                     'date': comment['created_at']})
+        path = "{}/issues/{}xx/{}-comments.json".format(GH_META_DIR, number // 100, number)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r") as f:
+            j = json.load(f)
 
-def print_pr_stats():
-    with open("pr_stats.csv", "w") as stats_file:
-        fieldnames = ['number', 'author', 'opened', 'commits', 'comments', 'labels', 'state', 'closed']
-        writer = csv.DictWriter(stats_file, fieldnames=fieldnames)
-        writer.writeheader()
-        for number in range(MAX_PR):
+        pr_comments[number] = len(j)
 
-            path = "{}/issues/{}xx/{}-PR.json".format(GH_META_DIR, number // 100, number)
-            if not os.path.exists(path):
-                continue
-            with open(path, "r") as f:
-                j = json.load(f)
+        for comment in j:
+            if comment['user'] is not None:
+                comments_writer.writerow({'number': str(number),
+                                          'author': comment['user']['login'],
+                                          'date': comment['created_at']})
 
-            if 'labels' in j:
-                labels = ';'.join([l['name'] for l in j['labels']])
-            else:
-                labels = ""
+        path = "{}/issues/{}xx/{}-PR.json".format(GH_META_DIR, number // 100, number)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r") as f:
+            j = json.load(f)
 
-            writer.writerow({'number': str(number),
-                             'author': j['user']['login'],
-                             'opened': j['created_at'],
-                             'commits': str(j['commits']),
-                             'comments': (str(pr_comments[number]) if number in pr_comments else '0'),
-                             'labels': labels,
-                             'state': ("merged" if j['merged'] else j['state']),
-                             'closed': (j['closed_at'] if j['state'] == 'closed' else "")})
+        if 'labels' in j:
+            labels = ';'.join([l['name'] for l in j['labels']])
+        else:
+            labels = ""
+
+        pr_writer.writerow({'number': str(number),
+                            'author': j['user']['login'],
+                            'opened': j['created_at'],
+                            'commits': str(j['commits']),
+                            'comments': (str(pr_comments[number]) if number in pr_comments else '0'),
+                            'labels': labels,
+                            'state': ("merged" if j['merged'] else j['state']),
+                            'closed': (j['closed_at'] if j['state'] == 'closed' else "")})
 
 def print_contributor_stats(contributor, year):
     print("Contributor {}".format(contributor))
@@ -136,8 +135,7 @@ def main():
     args, unknown_args = parser.parse_known_args()
 
     if args.build_stats:
-        print_comment_stats()
-        print_pr_stats()
+        get_stats()
     else:
         assert args.contributor, "You must specify a contributor"
         print_contributor_stats(args.contributor, args.year)
