@@ -88,7 +88,6 @@ def get_stats():
                 else:
                     first_comment[user] = min(first_comment[user], comment['created_at'])
 
-
         path = "{}/issues/{}xx/{}-PR.json".format(GH_META_DIR, number // 100, number)
         if not os.path.exists(path):
             continue
@@ -165,7 +164,7 @@ def print_global_stats(year):
                 new_authors += 1
 
     labels_ordered = [l for l in labels_opened.items()]
-    labels_ordered.sort(key=lambda i: i[1], reverse = True)
+    labels_ordered.sort(key=lambda i: i[1], reverse=True)
 
     comments = []
     commenters = set()
@@ -193,8 +192,8 @@ def print_global_stats(year):
     print("{} PRs were merged with {} commits".format(len(prs_merged), commits))
     print("From {} unique authors ({} first time authors)".format(len(authors), new_authors))
     print("There were {} review comments".format(len(comments)))
-    print("From {} unique reviewers ({} first time reviewers)".format(reviewers, new_reviewers))
-    print("(A reviewer must have left >= 5 comments)")
+    print("From {} unique regular* reviewers and {} first time reviewers".format(reviewers, new_reviewers))
+    print("*A regular reviewer must have left >= 5 comments")
 
 def get_contributor_stats(contributor, year):
 
@@ -225,10 +224,10 @@ def get_contributor_stats(contributor, year):
                     if pr not in prs:
                         prs.append(pr)
 
-    labels_ordered = sorted([l for l in labels_opened.items()], key=lambda i: i[1], reverse = True)
+    labels_ordered = sorted([l for l in labels_opened.items()], key=lambda i: i[1], reverse=True)
 
     comments = 0
-    
+
     with open("comments_stats.csv", "r") as f:
         reader = csv.DictReader(f)
         for comment in reader:
@@ -237,7 +236,6 @@ def get_contributor_stats(contributor, year):
                     comments += 1
 
     popular_prs = sorted(prs, key=lambda i: int(i['comments']), reverse=True)
-
 
     return {'year': year,
             'contributor': contributor,
@@ -265,13 +263,11 @@ def print_contributor_stats(stats, html):
             sys.exit(1)
         title = f"{stats['contributor']} Bitcoin Core contributions {stats['year']}"
         print(jinja2.Environment(loader=jinja2.FileSystemLoader('./'))
-                        .get_template('stats.html')
-                        .render(title=title, stats=stats))
-
+              .get_template('stats.html')
+              .render(title=title, stats=stats))
 
 def main():
     parser = argparse.ArgumentParser(add_help=False,
-                                     usage='%(prog)s [test_runner.py options] [script options] [scripts]',
                                      description=__doc__)
     parser.add_argument('--build_stats', '-b', action='store_true', default=False, help="Create the stats files")
     parser.add_argument('--contributor', '-c', help="Specify which contributor to create stats for")
@@ -280,7 +276,7 @@ def main():
     parser.add_argument('--html', '-h', action='store_true', help="Output HTML")
     parser.add_argument('--year', '-y', type=int, default=2019, help="Which year to create stats for")
 
-    args, unknown_args = parser.parse_known_args()
+    args = parser.parse_args()
 
     if args.help:
         # Print help and exit.
