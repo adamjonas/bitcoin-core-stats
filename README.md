@@ -5,7 +5,7 @@ based on flags based to `repo_stats.py`.
 
 ## Usage
 
-- Clone the [bitcoin-gh-meta](git@github.com:zw/bitcoin-gh-meta.git) and set
+- Clone the [bitcoin-gh-meta repository](https://github.com/zw/bitcoin-gh-meta) and set
   the `GH_META_DIR` parameter in `repo_stats.py`.
 - Run `repo_stats.py -b` to generate the comma separated value files of repo
   stats.
