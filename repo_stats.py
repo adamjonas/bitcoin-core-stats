@@ -3,6 +3,7 @@
 import argparse
 import csv
 from collections import defaultdict as dd
+import datetime
 import itertools
 import json
 import sys
@@ -116,7 +117,7 @@ def get_stats():
 
         if j['merged']:
             authors[author] += 1
-            authors_commits[author] += 1
+            authors_commits[author] += j['commits']
             if author not in first_merge:
                 first_merge[author] = j['created_at']
             else:
@@ -253,7 +254,9 @@ def print_contributor_stats(stats, html):
         print("You opened {} PRs".format(stats['prs_opened']))
         print("Your favorite components were {}".format([c[0] for c in stats['components']]))
         print("You had {} PRs (including {} commits) merged".format(stats['prs_merged'], stats['commits']))
-        print("Your most popular PRs (by review comments) were {} ({})".format(stats['popular_prs']['number'], stats['popular_prs']['title']))
+        print("Your most popular PRs (by review comments) were")
+        for pr in stats['popular_prs']:
+            print(" - {}: {} ({} comments)".format(pr['number'], pr['title'], pr['comments']))
         print("You made {} review comments".format(stats['comments']))
     else:
         try:
@@ -274,7 +277,9 @@ def main():
     parser.add_argument('--globalstats', '-g', action='store_true', help="Print global stats")
     parser.add_argument('--help', '-?', action='store_true', help='print help text and exit')
     parser.add_argument('--html', '-h', action='store_true', help="Output HTML")
-    parser.add_argument('--year', '-y', type=int, default=2019, help="Which year to create stats for")
+
+    year = datetime.date.today().year - 1  # default to last year
+    parser.add_argument('--year', '-y', type=int, default=year, help="Which year to create stats for (default {})".format(year))
 
     args = parser.parse_args()
 
