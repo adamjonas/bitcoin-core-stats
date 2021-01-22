@@ -12,7 +12,7 @@
 	<li><a href= 'https://github.com/bitcoin/bitcoin/pulls?utf8=%E2%9C%93&q=is%3Apr+author%3A{{ stats['contributor'] }}+label%3A"{{ component[0] }}"'>{{ component[0] }} ({{ component[1] }} Pull Requests)</a></li>
 	{% endfor %}
 	</ol></li>
-	<li/>... you had <b>{{ stats['prs_merged'] }} PRs</b> (including <b>{{ stats['commits'] }} commits)</b> merged</li>
+	<li/>... you had <b>{{ stats['prs_merged'] }} PRs</b> (including <b>{{ stats['commits'] }} commits</b>) merged</li>
 	<li>... your most popular PRs (by review comments) were
 	<ol>
 	{% for pr in stats['popular_prs'] %}
