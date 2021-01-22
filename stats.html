@@ -1,9 +1,3 @@
-<html lang="en">
-<head>
-  <title> {{ title }} </title>
-</head>
-<body style="font-family:arial;font-size:13px;">
-  <h1>{{ stats['contributor'] }}</h1>
   <p>In {{ stats['year'] }}...</p>
   <ul>
     <li>... you opened <b>{{ stats['prs_opened'] }} PRs</b>.</li>
@@ -18,5 +12,3 @@
 {% endfor %}    </ol></li>
     <li>... you made <b>{{ stats['comments'] }}</b> review comments</li>
   </ul>
-</body>
-</html>

@@ -247,39 +247,49 @@ def get_contributor_stats(contributor, year):
             'popular_prs': popular_prs[0:3],
             'comments': comments}
 
-def print_contributor_stats(stats, html):
+def print_contributor_stats(all_stats, html):
     if not html:
-        print(f"Contributor {stats['contributor']}")
-        print(f"In {stats['year']}...")
-        print("You opened {} PRs".format(stats['prs_opened']))
-        print("Your favorite components were {}".format([c[0] for c in stats['components']]))
-        print("You had {} PRs (including {} commits) merged".format(stats['prs_merged'], stats['commits']))
-        print("Your most popular PRs (by review comments) were")
-        for pr in stats['popular_prs']:
-            print(" - {}: {} ({} comments)".format(pr['number'], pr['title'], pr['comments']))
-        print("You made {} review comments".format(stats['comments']))
+        for contributor, stats_list in all_stats.items():
+            print(f"Contributor {contributor}")
+            for stats in stats_list:
+                print(f"In {stats['year']}...")
+                print("You opened {} PRs".format(stats['prs_opened']))
+                print("Your favorite components were {}".format([c[0] for c in stats['components']]))
+                print("You had {} PRs (including {} commits) merged".format(stats['prs_merged'], stats['commits']))
+                print("Your most popular PRs (by review comments) were")
+                for pr in stats['popular_prs']:
+                    print(" - {}: {} ({} comments)".format(pr['number'], pr['title'], pr['comments']))
+                print("You made {} review comments\n".format(stats['comments']))
     else:
         try:
             import jinja2
         except ImportError:
             print("jinja2 not found. Try `pip install jinja2`")
             sys.exit(1)
-        title = f"{stats['contributor']} Bitcoin Core contributions {stats['year']}"
         print(jinja2.Environment(loader=jinja2.FileSystemLoader('./'))
-              .get_template('stats.html')
-              .render(title=title, stats=stats))
+              .get_template('stats_head.html')
+              .render())
+        for contributor, stats_list in all_stats.items():
+            print(f"<h1>{contributor}</h1>")
+            for stats in stats_list:
+                print(jinja2.Environment(loader=jinja2.FileSystemLoader('./'))
+                      .get_template('stats.html')
+                      .render(stats=stats))
+        print(jinja2.Environment(loader=jinja2.FileSystemLoader('./'))
+              .get_template('stats_foot.html')
+              .render())
 
 def main():
     parser = argparse.ArgumentParser(add_help=False,
                                      description=__doc__)
     parser.add_argument('--build_stats', '-b', action='store_true', default=False, help="Create the stats files")
-    parser.add_argument('--contributor', '-c', help="Specify which contributor to create stats for")
+    parser.add_argument('--contributors', '-c', help="Specify which contributor to create stats for. You may pass multiple contributors separated by commas.")
     parser.add_argument('--globalstats', '-g', action='store_true', help="Print global stats")
     parser.add_argument('--help', '-?', action='store_true', help='print help text and exit')
     parser.add_argument('--html', '-h', action='store_true', help="Output HTML")
 
-    year = datetime.date.today().year - 1  # default to last year
-    parser.add_argument('--year', '-y', type=int, default=year, help="Which year to create stats for (default {})".format(year))
+    year = str(datetime.date.today().year - 1)  # default to last year
+    parser.add_argument('--years', '-y', default=year, help="Which years to create stats for (default {}). You may pass multiple years separated by commas.".format(year))
 
     args = parser.parse_args()
 
@@ -293,8 +303,15 @@ def main():
     elif args.globalstats:
         print_global_stats(args.year)
     else:
-        assert args.contributor, "You must specify a contributor"
-        stats = get_contributor_stats(args.contributor, args.year)
+        assert args.contributors, "You must specify a contributor"
+        stats = {}
+        contributors = args.contributors.split(',')
+        years = [int(y) for y in args.years.split(',')]
+        for contributor in contributors:
+            stats[contributor] = []
+            for year in years: 
+                stats[contributor].append(get_contributor_stats(contributor, year))
+
         print_contributor_stats(stats, args.html)
 
 if __name__ == '__main__':
