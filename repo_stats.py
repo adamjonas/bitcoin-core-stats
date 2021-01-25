@@ -134,67 +134,68 @@ def get_stats():
                                  'number_commits': authors_commits[author],
                                  'first_merge': first_merge[author]})
 
-def print_global_stats(year):
-    prs_opened = []
-    labels_opened = dd(int)
-    prs_merged = []
-    commits = 0
-    prs_closed = []
-    authors = set()
+def print_global_stats(years):
+    for year in years:
+        prs_opened = []
+        labels_opened = dd(int)
+        prs_merged = []
+        commits = 0
+        prs_closed = []
+        authors = set()
 
-    with open("pr_stats.csv", "r") as f:
-        reader = csv.DictReader(f)
-        for pr in reader:
-            if int(pr['opened'][0:4]) == year:
-                prs_opened.append(pr)
-                for label in pr['labels'].split(';'):
-                    if label in DESIRED_COMPONENTS:
-                        labels_opened[label] += 1
-            if pr['state'] == 'merged' and int(pr['closed'][0:4]) == year:
-                prs_merged.append(pr)
-                commits += int(pr['commits'])
-                authors.add(pr['author'])
-            if pr['state'] == 'closed' and int(pr['closed'][0:4]) == year:
-                prs_closed.append(pr)
+        with open("pr_stats.csv", "r") as f:
+            reader = csv.DictReader(f)
+            for pr in reader:
+                if int(pr['opened'][0:4]) == year:
+                    prs_opened.append(pr)
+                    for label in pr['labels'].split(';'):
+                        if label in DESIRED_COMPONENTS:
+                            labels_opened[label] += 1
+                if pr['state'] == 'merged' and int(pr['closed'][0:4]) == year:
+                    prs_merged.append(pr)
+                    commits += int(pr['commits'])
+                    authors.add(pr['author'])
+                if pr['state'] == 'closed' and int(pr['closed'][0:4]) == year:
+                    prs_closed.append(pr)
 
-    new_authors = 0
-    with open("author_stats.csv", "r") as f:
-        reader = csv.DictReader(f)
-        for author in reader:
-            if int(author['first_merge'][0:4]) == year:
-                new_authors += 1
+        new_authors = 0
+        with open("author_stats.csv", "r") as f:
+            reader = csv.DictReader(f)
+            for author in reader:
+                if int(author['first_merge'][0:4]) == year:
+                    new_authors += 1
 
-    labels_ordered = [l for l in labels_opened.items()]
-    labels_ordered.sort(key=lambda i: i[1], reverse=True)
+        labels_ordered = [l for l in labels_opened.items()]
+        labels_ordered.sort(key=lambda i: i[1], reverse=True)
 
-    comments = []
-    commenters = set()
+        comments = []
+        commenters = set()
 
-    with open("comments_stats.csv", "r") as f:
-        reader = csv.DictReader(f)
-        for comment in reader:
-            if int(comment['date'][0:4]) == year:
-                comments.append(comment)
-                commenters.add(comment['author'])
+        with open("comments_stats.csv", "r") as f:
+            reader = csv.DictReader(f)
+            for comment in reader:
+                if int(comment['date'][0:4]) == year:
+                    comments.append(comment)
+                    commenters.add(comment['author'])
 
-    reviewers = 0
-    new_reviewers = 0
-    with open("reviewer_stats.csv", "r") as f:
-        reader = csv.DictReader(f)
-        for reviewer in reader:
-            if int(reviewer['first_comment'][0:4]) == year:
-                new_reviewers += 1
-            if reviewer['reviewer'] in commenters and int(reviewer['number']) >= 5:
-                reviewers += 1
+        reviewers = 0
+        new_reviewers = 0
+        with open("reviewer_stats.csv", "r") as f:
+            reader = csv.DictReader(f)
+            for reviewer in reader:
+                if int(reviewer['first_comment'][0:4]) == year:
+                    new_reviewers += 1
+                if reviewer['reviewer'] in commenters and int(reviewer['number']) >= 5:
+                    reviewers += 1
 
-    print("In {}...".format(year))
-    print("{} PRs were opened".format(len(prs_opened)))
-    print("The most active components were {}".format([l[0] for l in labels_ordered[0:5]]))
-    print("{} PRs were merged with {} commits".format(len(prs_merged), commits))
-    print("From {} unique authors ({} first time authors)".format(len(authors), new_authors))
-    print("There were {} review comments".format(len(comments)))
-    print("From {} unique regular* reviewers and {} first time reviewers".format(reviewers, new_reviewers))
-    print("*A regular reviewer must have left >= 5 comments")
+        print("In {}...".format(year))
+        print("{} PRs were opened".format(len(prs_opened)))
+        print("The most active components were {}".format([l[0] for l in labels_ordered[0:5]]))
+        print("{} PRs were merged with {} commits".format(len(prs_merged), commits))
+        print("From {} unique authors ({} first time authors)".format(len(authors), new_authors))
+        print("There were {} review comments".format(len(comments)))
+        print("From {} unique regular* reviewers and {} first time reviewers".format(reviewers, new_reviewers))
+        print("*A regular reviewer must have left >= 5 comments\n")
 
 def get_contributor_stats(contributor, year):
 
@@ -298,15 +299,16 @@ def main():
         parser.print_help()
         sys.exit(0)
 
+    years = [int(y) for y in args.years.split(',')]
+
     if args.build_stats:
         get_stats()
     elif args.globalstats:
-        print_global_stats(args.year)
+        print_global_stats(years)
     else:
         assert args.contributors, "You must specify a contributor"
         stats = {}
         contributors = args.contributors.split(',')
-        years = [int(y) for y in args.years.split(',')]
         for contributor in contributors:
             stats[contributor] = []
             for year in years: 
