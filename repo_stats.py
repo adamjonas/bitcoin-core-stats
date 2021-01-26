@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """Get Repo stats"""
 import argparse
-import csv
 from collections import defaultdict as dd
+import csv
 import datetime
 import itertools
 import json
-import sys
 import os.path
+import sys
 
-MAX_PR = 18000
 GH_META_DIR = "../bitcoin-gh-meta"
-BITCOIN_DIR = "../bitcoin"
 DESIRED_COMPONENTS = ['Build system',
                       'Config',
                       'Consensus',
@@ -311,7 +309,7 @@ def main():
         contributors = args.contributors.split(',')
         for contributor in contributors:
             stats[contributor] = []
-            for year in years: 
+            for year in years:
                 stats[contributor].append(get_contributor_stats(contributor, year))
 
         print_contributor_stats(stats, args.html)
